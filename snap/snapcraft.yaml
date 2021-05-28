@@ -14,6 +14,19 @@ architectures:
   - build-on: [amd64, arm64]
     run-on: arm64
 
+parts:
+  libufdt:
+    plugin: dump
+    source: https://android.googlesource.com/platform/system/libufdt
+    source-type: git
+    source-branch: master
+    organize:
+      utils/src/mkdtboimg.py: mkdtboimg.py
+    stage:
+      - mkdtboimg.py
+    prime:
+      - -*
+
 build-packages:
   - dpkg-dev
   - android-tools-mkbootimg
