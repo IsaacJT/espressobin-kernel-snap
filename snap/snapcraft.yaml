@@ -33,6 +33,49 @@ parts:
     organize:
       '*': firmware/
 
+  firmware:
+    plugin: nil
+    stage-packages:
+      - linux-firmware
+      - wireless-regdb
+    override-build: |
+      snapcraftctl build
+      mkdir -p ${SNAPCRAFT_PART_INSTALL}/firmware/wlan \
+               ${SNAPCRAFT_PART_INSTALL}/firmware/smsc75xx \
+               ${SNAPCRAFT_PART_INSTALL}/lib
+      ln -s ../firmware ${SNAPCRAFT_PART_INSTALL}/lib/firmware
+    stage:
+      - -firmware/amd
+      - -firmware/amdgpu
+      - -firmware/asihpi
+      - -firmware/cavium
+      - -firmware/cxgb3
+      - -firmware/cxgb4
+      - -firmware/dpaa2
+      - -firmware/i915
+      - -firmware/imx
+      - -firmware/intel
+      - -firmware/iwlwifi-*
+      - -firmware/liquidio
+      - -firmware/matrox
+      - -firmware/mellanox
+      - -firmware/mrvl
+      - -firmware/netronome
+      - -firmware/nvidia
+      - -firmware/qed
+      - -firmware/radeon
+      - -firmware/rockchip
+      - -firmware/ath10k/QCA9377/hw1.0/firmware-5.bin
+      - -firmware/ath3k-1.fw
+      - -firmware/qca/htbtfw20.tlv
+      - -firmware/qcom/sdm845
+      - -firmware/qcom/venus*
+    organize:
+      lib/firmware: firmware
+    prime:
+      - -usr
+      - -lib
+
   libufdt:
     plugin: dump
     source: https://android.googlesource.com/platform/system/libufdt
