@@ -15,6 +15,24 @@ architectures:
     run-on: arm64
 
 parts:
+  firmware-custom:
+    plugin: dump
+    source: .
+    source-type: local
+    override-pull: |
+      # allow custom source definition
+      if [ -n "${SNAPDRAGON_KERNEL_SNAP_FIRMWARE:-}" ]; then
+        if [ -d ${SNAPDRAGON_KERNEL_SNAP_FIRMWARE} ]; then
+          cp -r ${SNAPDRAGON_KERNEL_SNAP_FIRMWARE}/* ${SNAPCRAFT_PART_SRC}
+        else
+          git clone --depth 1 ${SNAPDRAGON_KERNEL_SNAP_FIRMWARE} ${SNAPCRAFT_PART_SRC}
+        fi
+      else
+        echo "Missing env SNAPDRAGON_KERNEL_SNAP_FIRMWARE no custom firmware will be included"
+      fi
+    organize:
+      '*': firmware/
+
   libufdt:
     plugin: dump
     source: https://android.googlesource.com/platform/system/libufdt
