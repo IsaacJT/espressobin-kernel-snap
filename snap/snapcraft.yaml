@@ -15,6 +15,54 @@ architectures:
     run-on: arm64
 
 parts:
+  kernel:
+    after:
+      - libufdt
+      - firmware-custom
+    plugin: kernel
+    source: https://git.launchpad.net/~ubuntu-cervinia/+git/linux-kernel
+    source-type: git
+    source-depth: 1
+    source-branch: master
+    kconfigflavour: "qcomm"
+    kernel-with-firmware: false
+    kernel-image-target: Image-dtb
+    kernel-compiler-parameters:
+      - CC=clang
+      - DTC_EXT=dtc
+    kernel-initrd-core-base: core20
+    kernel-initrd-flavour: edge
+    kernel-initrd-compression: gz
+    kernel-initrd-firmware:
+      - firmware/venus.*
+    override-build: |
+      snapcraftctl build
+      mkdir -p  ${SNAPCRAFT_PART_INSTALL}/dtbs/
+      cp ${SNAPCRAFT_PART_BUILD}/arch/arm64/boot/dts/qcom/*.dtb \
+         ${SNAPCRAFT_PART_INSTALL}/dtbs
+      kernel_version="$(git describe --tags  | cut -c 14-)"
+      # build dtbo image if there are any dtbo files
+      if ls ${SNAPCRAFT_PART_BUILD}/arch/arm64/boot/dts/qcom/*.dtbo 1> /dev/null 2>&1; then
+          ${SNAPCRAFT_STAGE}/mkdtboimg.py create \
+                             ${SNAPCRAFT_PART_INSTALL}/dtbo.img \
+                             ${SNAPCRAFT_PART_BUILD}/arch/arm64/boot/dts/qcom/*.dtbo
+          kernel_version="${kernel_version}-dtbo"
+      fi
+      snapcraftctl set-version ${kernel_version}
+    stage:
+      - System.map-*
+      - config-*
+      - dtb*
+      - initrd.img
+      - kernel.img
+      - modules
+      - -modules/*/build
+      - -modules/*/source
+    prime:
+      - -initrd.img
+      - -kernel.img
+      - -dtbs
+
   firmware-custom:
     plugin: dump
     source: .
