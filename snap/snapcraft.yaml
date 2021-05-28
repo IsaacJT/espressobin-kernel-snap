@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: GPL-2.0
+# Copyright (C) 2021 Canonical Ltd
+name: qti-sa8155p-kernel
+summary: Snapdragon kernel for snappy
+description: This is a snapdragon snapped kernel, based off msm kernel.lnx.4.14.r18-rel
+
+grade: stable
+build-base: core18
+confinement: strict
+type: kernel
+adopt-info: kernel
+
+architectures:
+  - build-on: [amd64, arm64]
+    run-on: arm64
