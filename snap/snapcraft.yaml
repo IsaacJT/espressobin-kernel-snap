@@ -13,3 +13,16 @@ adopt-info: kernel
 architectures:
   - build-on: [amd64, arm64]
     run-on: arm64
+
+build-packages:
+  - dpkg-dev
+  - android-tools-mkbootimg
+  - libssl-dev
+  - libfdt-dev
+  - cpio
+  - clang
+  - binutils-aarch64-linux-gnu
+  - on amd64:
+    - gcc-aarch64-linux-gnu
+  - else:
+    - gcc
