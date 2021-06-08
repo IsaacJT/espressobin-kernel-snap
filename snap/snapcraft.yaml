@@ -140,9 +140,6 @@ parts:
     plugin: nil
     after:
       - kernel
-    build-packages:
-      - libfdt-dev
-      - android-tools-mkbootimg
     override-build: |
       mkbootimg \
           --kernel ${SNAPCRAFT_STAGE}/kernel.img \
