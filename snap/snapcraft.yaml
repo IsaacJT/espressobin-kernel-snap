@@ -19,6 +19,7 @@ parts:
     after:
       - libufdt
       - firmware-custom
+      - fde-hooks
     plugin: kernel
     source: https://git.launchpad.net/~ubuntu-cervinia/+git/linux-kernel
     source-type: git
@@ -35,6 +36,13 @@ parts:
     kernel-initrd-compression: gz
     kernel-initrd-firmware:
       - firmware/venus.*
+      - firmware/ubuntufde*.mbn
+      - firmware/cmnlib*
+    kernel-initrd-addons:
+      - usr/bin/fde-reveal-key
+      - usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/libQseeComApi.*
+      - usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/libion.*
+      - usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/liblog.*
     override-build: |
       snapcraftctl build
       mkdir -p  ${SNAPCRAFT_PART_INSTALL}/dtbs/
