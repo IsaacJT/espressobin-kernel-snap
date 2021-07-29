@@ -132,6 +132,33 @@ parts:
     prime:
       - -*
 
+  # this part if optional, it enables FDE functionality
+  fde-hooks:
+    plugin: dump
+    source: .
+    source-type: local
+    override-pull: |
+      # allow custom source definition
+      if [ -n "${SNAPDRAGON_KERNEL_FDE_HOOK_BUNDLE:-}" ]; then
+        if [ -d ${SNAPDRAGON_KERNEL_FDE_HOOK_BUNDLE} ]; then
+          cp -r ${SNAPDRAGON_KERNEL_FDE_HOOK_BUNDLE}/* ${SNAPCRAFT_PART_SRC}
+        else
+          git clone --depth 1 ${SNAPDRAGON_KERNEL_FDE_HOOK_BUNDLE} ${SNAPCRAFT_PART_SRC}
+        fi
+      else
+        echo "Missing env SNAPDRAGON_KERNEL_FDE_HOOK_BUNDLE, FDE functionality won't be included"
+      fi
+    organize:
+      lib/firmware/: firmware/
+      usr/bin/fde-setup: meta/hooks/fde-setup
+    stage:
+      # clean any test bins from reference build
+      - -meta/snap.yaml
+      - -snap
+      - -usr/bin/snapctl
+      - -usr/bin/test-fde-setup-reveal
+      - -usr/bin/fde-key-manager
+
   bootimg:
     plugin: nil
     after:
