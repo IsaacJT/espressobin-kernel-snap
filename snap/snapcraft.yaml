@@ -38,8 +38,6 @@ parts:
     override-build: |
       snapcraftctl build
       mkdir -p  ${SNAPCRAFT_PART_INSTALL}/dtbs/
-      cp ${SNAPCRAFT_PART_BUILD}/arch/arm64/boot/dts/qcom/*.dtb \
-         ${SNAPCRAFT_PART_INSTALL}/dtbs
       kernel_version="$(git describe --tags  | cut -c 14-)"
       # build dtbo image if there are any dtbo files
       if ls ${SNAPCRAFT_PART_BUILD}/arch/arm64/boot/dts/qcom/*.dtbo 1> /dev/null 2>&1; then
@@ -52,7 +50,6 @@ parts:
     stage:
       - System.map-*
       - config-*
-      - dtb*
       - initrd.img
       - kernel.img
       - modules
@@ -61,7 +58,6 @@ parts:
     prime:
       - -initrd.img
       - -kernel.img
-      - -dtbs
 
   firmware-custom:
     plugin: dump
