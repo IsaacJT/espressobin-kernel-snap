@@ -6,7 +6,7 @@ description: This is a snapdragon snapped kernel, based off msm kernel.lnx.4.14.
 
 grade: stable
 build-base: core18
-confinement: strict
+confinement: devmode
 type: kernel
 adopt-info: kernel
 
@@ -14,26 +14,10 @@ architectures:
   - build-on: [amd64, arm64]
     run-on: arm64
 
-plugs:
-  qseecom:
-    interface: system-files
-    write:
-      - /dev/qseecom
-  ion:
-    interface: system-files
-    write:
-      - /dev/ion
-
 # environment to run fde-setup hook
 environment:
     SNAP_TA_PATH:    /lib/firmware
     LD_LIBRARY_PATH: ${SNAP_LIBRARY_PATH}:${SNAP}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}
-
-hooks:
-    fde-setup:
-        plugs:
-            - qseecom
-            - ion
 
 parts:
   kernel:
