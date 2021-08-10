@@ -5,7 +5,7 @@ summary: Snapdragon kernel for snappy
 description: This is a snapdragon snapped kernel, based off msm kernel.lnx.4.14.r18-rel
 
 grade: stable
-build-base: core18
+build-base: core20
 confinement: devmode
 type: kernel
 adopt-info: kernel
@@ -25,7 +25,7 @@ parts:
       - libufdt
       - firmware-custom
       - fde-hooks
-    plugin: kernel
+    plugin: x-kernel
     source: https://git.launchpad.net/~ubuntu-cervinia/+git/linux-kernel
     source-type: git
     source-depth: 1
@@ -36,7 +36,6 @@ parts:
     kernel-compiler-parameters:
       - CC=clang
       - DTC_EXT=dtc
-    kernel-initrd-core-base: core20
     kernel-initrd-flavour: edge
     kernel-initrd-compression: gz
     kernel-initrd-firmware:
@@ -50,8 +49,7 @@ parts:
       - usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/liblog.*
     override-build: |
       snapcraftctl build
-      mkdir -p  ${SNAPCRAFT_PART_INSTALL}/dtbs/
-      kernel_version="$(git describe --tags  | cut -c 14-)"
+      kernel_version="$(git --git-dir=${SNAPCRAFT_PART_SRC}/.git describe --tags  | cut -c 14-)"
       # build dtbo image if there are any dtbo files
       if ls ${SNAPCRAFT_PART_BUILD}/arch/arm64/boot/dts/qcom/*.dtbo 1> /dev/null 2>&1; then
           ${SNAPCRAFT_STAGE}/mkdtboimg.py create \
