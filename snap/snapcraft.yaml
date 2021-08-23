@@ -229,6 +229,7 @@ build-packages:
   - cpio
   - clang
   - binutils-aarch64-linux-gnu
+  - device-tree-compiler
   - on amd64:
     - gcc-aarch64-linux-gnu
   - else:
