@@ -19,6 +19,12 @@ environment:
     SNAP_TA_PATH:    /lib/firmware
     LD_LIBRARY_PATH: ${SNAP_LIBRARY_PATH}:${SNAP}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}
 
+hooks:
+  fde-setup:
+    plugs:
+    - tee
+    - ion-memory-control
+
 parts:
   kernel:
     after:
