@@ -52,7 +52,7 @@ parts:
     kernel-compiler-parameters:
       - CC=clang
       - DTC_EXT=dtc
-    kernel-initrd-flavour: edge
+    kernel-initrd-channel: edge
     kernel-initrd-compression: gz
     kernel-initrd-firmware:
       - firmware/venus.*
