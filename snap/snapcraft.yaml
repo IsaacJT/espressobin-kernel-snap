@@ -175,11 +175,16 @@ parts:
       usr/bin/fde-setup: meta/hooks/fde-setup
     stage:
       # clean any test bins from reference build
-      - -meta/snap.yaml
-      - -snap
+      - meta/hooks/fde-setup
+      - firmware
+      - usr
       - -usr/bin/snapctl
       - -usr/bin/test-fde-setup-reveal
-      - -usr/bin/fde-key-manager
+    prime:
+      - firmware
+      - meta/hooks/fde-setup
+      - usr/bin/qseecomd
+      - usr/lib
 
   bootimg:
     plugin: nil
