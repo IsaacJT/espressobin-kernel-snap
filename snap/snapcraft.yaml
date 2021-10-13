@@ -25,6 +25,16 @@ hooks:
     - tee
     - ion-memory-control
 
+apps:
+  qseecomd:
+    command: usr/bin/qseecomd
+    daemon: simple
+    install-mode: disable
+    plugs:
+      - tee
+      - ion-memory-control
+      - raw-volume
+
 parts:
   kernel:
     after:
