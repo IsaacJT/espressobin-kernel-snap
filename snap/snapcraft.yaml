@@ -60,9 +60,10 @@ parts:
       - firmware/cmnlib*
     kernel-initrd-addons:
       - usr/bin/fde-reveal-key
-      - usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/libQseeComApi.*
-      - usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/libion.*
-      - usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/liblog.*
+      - usr/bin/fde-device-unlock
+      - usr/bin/qseecomd
+      - usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/lib*
+      - usr/lib/systemd
     override-build: |
       snapcraftctl build
       kernel_version="$(git --git-dir=${SNAPCRAFT_PART_SRC}/.git describe --tags  | cut -c 14-)"
