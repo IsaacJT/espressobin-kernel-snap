@@ -88,9 +88,7 @@ parts:
       - -kernel.img
 
   firmware-custom:
-    plugin: dump
-    source: .
-    source-type: local
+    plugin: nil
     override-pull: |
       # allow custom source definition
       if [ -n "${SNAPDRAGON_KERNEL_SNAP_FIRMWARE:-}" ]; then
@@ -102,8 +100,9 @@ parts:
       else
         echo "Missing env SNAPDRAGON_KERNEL_SNAP_FIRMWARE no custom firmware will be included"
       fi
-    organize:
-      '*': firmware/
+    override-build: |
+      mkdir ${SNAPCRAFT_PART_INSTALL}/firmware
+      cp -r * ${SNAPCRAFT_PART_INSTALL}/firmware
 
   firmware:
     plugin: nil
