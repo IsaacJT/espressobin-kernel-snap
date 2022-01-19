@@ -29,13 +29,15 @@ parts:
     source-branch: master-next
     kernel-with-firmware: false
     kernel-image-target: Image
+    kernel-device-trees: 
+      - marvell/armada-3720-espressobin
     kernel-compiler-parameters:
       - DTC_EXT=dtc
     kernel-initrd-channel: stable
     kernel-initrd-compression: lz4
     override-build: |
       snapcraftctl build
-      kernel_version="$(git --git-dir=${SNAPCRAFT_PART_SRC}/.git describe --tags  | cut -c 14-)"
+      kernel_version="$(git --git-dir=${SNAPCRAFT_PART_SRC}/.git describe --tags  | cut -c 8-)"
       snapcraftctl set-version ${kernel_version}
     stage:
       - System.map-*
