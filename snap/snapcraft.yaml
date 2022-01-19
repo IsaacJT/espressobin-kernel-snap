@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0
 # Copyright (C) 2021 Canonical Ltd
-name: qti-sa8155p-kernel
-summary: Snapdragon kernel for snappy
-description: This is a snapdragon snapped kernel, based off msm kernel.lnx.4.14.r18-rel
+name: espressobin-kernel
+summary: EspressoBin kernel for snappy
+description: This is an EspressoBin snapped kernel
 
 grade: stable
 build-base: core20
@@ -11,7 +11,9 @@ type: kernel
 adopt-info: kernel
 
 architectures:
-  - build-on: [amd64, arm64]
+  - build-on: 
+      - amd64   
+      - arm64
     run-on: arm64
 
 # environment to run fde-setup hook
@@ -19,61 +21,21 @@ environment:
     SNAP_TA_PATH:    /lib/firmware
     LD_LIBRARY_PATH: ${SNAP_LIBRARY_PATH}:${SNAP}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}
 
-hooks:
-  fde-setup:
-    plugs:
-    - tee
-    - ion-memory-control
-
-apps:
-  qseecomd:
-    command: usr/bin/qseecomd
-    daemon: simple
-    install-mode: disable
-    plugs:
-      - tee
-      - ion-memory-control
-      - raw-volume
-
 parts:
   kernel:
-    after:
-      - libufdt
-      - firmware-custom
-      - fde-hooks
     plugin: x-kernel
-    source: https://git.launchpad.net/~ubuntu-cervinia/+git/linux-kernel
+    source: git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy
     source-type: git
-    source-depth: 1
-    source-branch: master
-    kconfigflavour: "qcomm"
+    source-branch: master-next
     kernel-with-firmware: false
-    kernel-image-target: Image-dtb
+    kernel-image-target: Image
     kernel-compiler-parameters:
-      - CC=clang
       - DTC_EXT=dtc
-    kernel-initrd-channel: edge
-    kernel-initrd-compression: gz
-    kernel-initrd-firmware:
-      - firmware/venus.*
-      - firmware/ubuntufde*.mbn
-      - firmware/cmnlib*
-    kernel-initrd-addons:
-      - usr/bin/fde-reveal-key
-      - usr/bin/fde-device-unlock
-      - usr/bin/qseecomd
-      - usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/lib*
-      - usr/lib/systemd
+    kernel-initrd-channel: stable
+    kernel-initrd-compression: lz4
     override-build: |
       snapcraftctl build
       kernel_version="$(git --git-dir=${SNAPCRAFT_PART_SRC}/.git describe --tags  | cut -c 14-)"
-      # build dtbo image if there are any dtbo files
-      if ls ${SNAPCRAFT_PART_BUILD}/arch/arm64/boot/dts/qcom/*.dtbo 1> /dev/null 2>&1; then
-          ${SNAPCRAFT_STAGE}/mkdtboimg.py create \
-                             ${SNAPCRAFT_PART_INSTALL}/dtbo.img \
-                             ${SNAPCRAFT_PART_BUILD}/arch/arm64/boot/dts/qcom/*.dtbo
-          kernel_version="${kernel_version}-dtbo"
-      fi
       snapcraftctl set-version ${kernel_version}
     stage:
       - System.map-*
@@ -83,164 +45,6 @@ parts:
       - modules
       - -modules/*/build
       - -modules/*/source
-    prime:
-      - -initrd.img
-      - -kernel.img
-
-  firmware-custom:
-    plugin: nil
-    override-pull: |
-      # allow custom source definition
-      if [ -n "${SNAPDRAGON_KERNEL_SNAP_FIRMWARE:-}" ]; then
-        if [ -d ${SNAPDRAGON_KERNEL_SNAP_FIRMWARE} ]; then
-          cp -r ${SNAPDRAGON_KERNEL_SNAP_FIRMWARE}/* ${SNAPCRAFT_PART_SRC}
-        else
-          git clone --depth 1 ${SNAPDRAGON_KERNEL_SNAP_FIRMWARE} ${SNAPCRAFT_PART_SRC}
-        fi
-      else
-        echo "Missing env SNAPDRAGON_KERNEL_SNAP_FIRMWARE no custom firmware will be included"
-      fi
-    override-build: |
-      mkdir ${SNAPCRAFT_PART_INSTALL}/firmware
-      cp -r * ${SNAPCRAFT_PART_INSTALL}/firmware
-
-  firmware:
-    plugin: nil
-    stage-packages:
-      - linux-firmware
-      - wireless-regdb
-    stage:
-      - -firmware/amd
-      - -firmware/amdgpu
-      - -firmware/asihpi
-      - -firmware/cavium
-      - -firmware/cxgb3
-      - -firmware/cxgb4
-      - -firmware/dpaa2
-      - -firmware/i915
-      - -firmware/imx
-      - -firmware/intel
-      - -firmware/iwlwifi-*
-      - -firmware/liquidio
-      - -firmware/matrox
-      - -firmware/mellanox
-      - -firmware/mrvl
-      - -firmware/netronome
-      - -firmware/nvidia
-      - -firmware/qed
-      - -firmware/radeon
-      - -firmware/rockchip
-      - -firmware/ath10k/QCA9377/hw1.0/firmware-5.bin
-      - -firmware/ath3k-1.fw
-      - -firmware/qca/htbtfw20.tlv
-      - -firmware/qcom/sdm845
-      - -firmware/qcom/venus*
-    organize:
-      lib/firmware: firmware
-    prime:
-      - -usr
-      - -lib
-
-  libufdt:
-    plugin: dump
-    source: https://android.googlesource.com/platform/system/libufdt
-    source-type: git
-    source-branch: master
-    organize:
-      utils/src/mkdtboimg.py: mkdtboimg.py
-    stage:
-      - mkdtboimg.py
-    prime:
-      - -*
-
-  # this part if optional, it enables FDE functionality
-  fde-hooks:
-    plugin: dump
-    source: .
-    source-type: local
-    override-pull: |
-      # allow custom source definition
-      if [ -n "${SNAPDRAGON_KERNEL_FDE_HOOK_BUNDLE:-}" ]; then
-        if [ -d ${SNAPDRAGON_KERNEL_FDE_HOOK_BUNDLE} ]; then
-          cp -r ${SNAPDRAGON_KERNEL_FDE_HOOK_BUNDLE}/* ${SNAPCRAFT_PART_SRC}
-        else
-          git clone --depth 1 ${SNAPDRAGON_KERNEL_FDE_HOOK_BUNDLE} ${SNAPCRAFT_PART_SRC}
-        fi
-      else
-        echo "Missing env SNAPDRAGON_KERNEL_FDE_HOOK_BUNDLE, FDE functionality won't be included"
-      fi
-    organize:
-      lib/firmware/: firmware/
-      usr/bin/fde-setup: meta/hooks/fde-setup
-    stage:
-      # clean any test bins from reference build
-      - meta/hooks/fde-setup
-      - firmware
-      - usr
-      - -usr/bin/snapctl
-      - -usr/bin/test-fde-setup-reveal
-    prime:
-      - firmware
-      - meta/hooks/fde-setup
-      - usr/bin/qseecomd
-      - usr/lib
-
-  bootimg:
-    plugin: nil
-    after:
-      - kernel
-    override-build: |
-      mkbootimg \
-          --kernel ${SNAPCRAFT_STAGE}/kernel.img \
-          --ramdisk ${SNAPCRAFT_STAGE}/initrd.img \
-          --output ${SNAPCRAFT_PART_INSTALL}/boot.img.nonsecure \
-          --pagesize 4096 \
-          --base 0x80000000 \
-          --kernel_offset 0x8000 \
-          --ramdisk_offset 0x1000000 \
-          --tags_offset 0x100 \
-          --cmdline 'console=tty0 console=ttyMSM0,115200n8 panic=-1 clk_ignore_unused pd_ignore_unused androidboot.hardware=qcom androidboot.memcg=1 video=vfb:640x400,bpp=32,memsize=3072000 androidboot.usbcontroller=a600000.dwc3 firmware_class.path=/lib/firmware/ systemd.log_target=console'
-    prime:
-      - -*
-
-  signing-test-keys:
-    plugin: dump
-    source: https://git.launchpad.net/~ubuntu-cervinia/+git/cervinia-test-keys
-    source-type: git
-    organize:
-      '*': signing-keys/
-    prime:
-      - -*
-
-  sign-bootimg:
-    plugin: nil
-    after:
-      - bootimg
-      - signing-test-keys
-    override-build: |
-      KEY_NAME="bootimg-key"
-      BOOT_IMG="boot.img"
-      TARGET_SHA_TYPE=sha256
-      BOARD_KERNEL_PAGESIZE=2048
-      # create signature block
-      openssl \
-        dgst \
-        -${TARGET_SHA_TYPE} \
-        -binary ${SNAPCRAFT_STAGE}/${BOOT_IMG}.nonsecure \
-        > ${BOOT_IMG}.${TARGET_SHA_TYPE}
-      openssl \
-        pkeyutl \
-        -sign \
-        -in ${BOOT_IMG}.${TARGET_SHA_TYPE} \
-        -inkey ${SNAPCRAFT_STAGE}/signing-keys/${KEY_NAME}.key \
-        -out ${BOOT_IMG}.sig \
-        -pkeyopt digest:sha256 \
-        -pkeyopt rsa_padding_mode:pkcs1
-
-      # append it to the image
-      dd if=/dev/zero of=${BOOT_IMG}.sig.padded bs=${BOARD_KERNEL_PAGESIZE} count=1
-      dd if=${BOOT_IMG}.sig of=${BOOT_IMG}.sig.padded conv=notrunc
-      cat ${SNAPCRAFT_STAGE}/${BOOT_IMG}.nonsecure ${BOOT_IMG}.sig.padded > ${SNAPCRAFT_PART_INSTALL}/${BOOT_IMG}
 
 build-packages:
   - dpkg-dev
@@ -248,7 +52,6 @@ build-packages:
   - libssl-dev
   - libfdt-dev
   - cpio
-  - clang
   - binutils-aarch64-linux-gnu
   - device-tree-compiler
   - on amd64:
