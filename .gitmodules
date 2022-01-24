@@ -1,3 +1,4 @@
 [submodule "snap/plugins"]
 	path = snap/plugins
-	url = https://github.com/kubiko/snapcraft-kernel-plugin.git
+	url = https://github.com/IsaacJT/snapcraft-kernel-plugin.git
+	branch = fix-extract-branch-name
