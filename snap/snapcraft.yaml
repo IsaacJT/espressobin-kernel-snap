@@ -22,6 +22,7 @@ parts:
     plugin: x-kernel
     source: git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal
     source-type: git
+    source-depth: 1
     source-branch: hwe-5.13 
     kernel-with-firmware: false
     kernel-image-target: Image
@@ -29,8 +30,14 @@ parts:
       - marvell/armada-3720-espressobin
     kernel-initrd-channel: stable
     kernel-initrd-compression: gz
+    kconfigflavour: generic
+    kconfigs:
+      - CONFIG_SYSTEM_REVOCATION_KEYS=""
+      - CONFIG_SYSTEM_TRUSTED_KEYS=""
+    override-pull: |
+      snapcraftctl pull
+      touch ${SNAPCRAFT_PART_SRC}/debian.hwe-5.13/config/config.common.ports
     override-build: |
-      echo CONFIG_SQUASHFS_XZ=y >> ${SNAPCRAFT_PART_SRC}/arch/arm64/configs/defconfig
       snapcraftctl build
       snapcraftctl set-version $(dpkg-parsechangelog -l ${SNAPCRAFT_PART_SRC}/debian.hwe-5.13/changelog -S version)
     stage:
@@ -60,6 +67,7 @@ build-packages:
   - cpio
   - binutils-aarch64-linux-gnu
   - device-tree-compiler
+  - libelf-dev
   - on amd64:
     - gcc-aarch64-linux-gnu
   - else:
