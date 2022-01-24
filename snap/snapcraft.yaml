@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: GPL-2.0
 # Copyright (C) 2021 Canonical Ltd
+
 name: espressobin-kernel
 summary: EspressoBin kernel for snappy
 description: This is an EspressoBin snapped kernel
 
 grade: stable
 build-base: core20
-confinement: devmode
+confinement: strict
 type: kernel
 adopt-info: kernel
 
@@ -16,30 +17,22 @@ architectures:
       - arm64
     run-on: arm64
 
-# environment to run fde-setup hook
-environment:
-    SNAP_TA_PATH:    /lib/firmware
-    LD_LIBRARY_PATH: ${SNAP_LIBRARY_PATH}:${SNAP}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}
-
 parts:
   kernel:
     plugin: x-kernel
-    source: git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy 
+    source: git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal
     source-type: git
-    source-branch: master-next
+    source-branch: hwe-5.13 
     kernel-with-firmware: false
     kernel-image-target: Image
     kernel-device-trees: 
       - marvell/armada-3720-espressobin
-    kernel-compiler-parameters:
-      - DTC_EXT=dtc
     kernel-initrd-channel: stable
     kernel-initrd-compression: gz
     override-build: |
       echo CONFIG_SQUASHFS_XZ=y >> ${SNAPCRAFT_PART_SRC}/arch/arm64/configs/defconfig
       snapcraftctl build
-      kernel_version="$(git --git-dir=${SNAPCRAFT_PART_SRC}/.git describe --tags  | cut -c 8-)"
-      snapcraftctl set-version ${kernel_version}
+      snapcraftctl set-version $(dpkg-parsechangelog -l ${SNAPCRAFT_PART_SRC}/debian.hwe-5.13/changelog -S version)
     stage:
       - System.map-*
       - config-*
