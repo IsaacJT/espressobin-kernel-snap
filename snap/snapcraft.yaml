@@ -24,7 +24,7 @@ environment:
 parts:
   kernel:
     plugin: x-kernel
-    source: git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy
+    source: git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy 
     source-type: git
     source-branch: master-next
     kernel-with-firmware: false
@@ -34,8 +34,9 @@ parts:
     kernel-compiler-parameters:
       - DTC_EXT=dtc
     kernel-initrd-channel: stable
-    kernel-initrd-compression: lz4
+    kernel-initrd-compression: gz
     override-build: |
+      echo CONFIG_SQUASHFS_XZ=y >> ${SNAPCRAFT_PART_SRC}/arch/arm64/configs/defconfig
       snapcraftctl build
       kernel_version="$(git --git-dir=${SNAPCRAFT_PART_SRC}/.git describe --tags  | cut -c 8-)"
       snapcraftctl set-version ${kernel_version}
@@ -45,8 +46,18 @@ parts:
       - initrd.img
       - kernel.img
       - modules
+      - dtbs/*
       - -modules/*/build
-      - -modules/*/source
+      - -modules/*/source 
+  firmware:
+    plugin: nil
+    source: https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git
+    source-type: git
+    source-branch: main
+    source-depth: 1
+    override-build: |
+      mkdir ${SNAPCRAFT_PART_INSTALL}/firmware
+      cp -r ${SNAPCRAFT_PART_SRC}/* ${SNAPCRAFT_PART_INSTALL}/firmware/
 
 build-packages:
   - dpkg-dev
