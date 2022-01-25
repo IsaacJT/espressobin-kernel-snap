@@ -40,9 +40,12 @@ parts:
       - mvmdio
     kconfigflavour: generic
     kconfigs:
+      # Disable image signing keys 
       - CONFIG_SYSTEM_REVOCATION_KEYS=""
       - CONFIG_SYSTEM_TRUSTED_KEYS=""
+      # This settings causes an error while building 
       - CONFIG_DEBUG_INFO_BTF=n
+      # Disable unneeded components (the device is headless)
       - CONFIG_SOUND=n
       - CONFIG_DRM=n
       - CONFIG_MEDIA_SUPPORT=n
