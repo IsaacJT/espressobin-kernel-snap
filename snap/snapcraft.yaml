@@ -31,13 +31,21 @@ parts:
     kernel-initrd-channel: stable
     kernel-initrd-compression: gz
     kernel-initrd-configured-modules:
+      # Required for loading the SD-Card
       - sdhci-xenon-driver
       - gpio-regulator
+      # Required for network access
+      - mv88e6xxx
+      - mvneta
+      - mvmdio
     kconfigflavour: generic
     kconfigs:
       - CONFIG_SYSTEM_REVOCATION_KEYS=""
       - CONFIG_SYSTEM_TRUSTED_KEYS=""
       - CONFIG_DEBUG_INFO_BTF=n
+      - CONFIG_SOUND=n
+      - CONFIG_DRM=n
+      - CONFIG_MEDIA_SUPPORT=n
     # config.common.ports doesn't exist in the hwe-* branches, so just create an empty file
     override-pull: |
       snapcraftctl pull
