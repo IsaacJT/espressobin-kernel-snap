@@ -50,6 +50,7 @@ parts:
       snapcraftctl build
       KVER=$(ls ${SNAPCRAFT_PART_INSTALL}/modules/)
       snapcraftctl set-version ${KVER}
+      mkimage -f ${SNAPCRAFT_PROJECT_DIR}/fitImage.its ${SNAPCRAFT_PART_INSTALL}/fitImage
     stage:
       - System.map-*
       - config-*
