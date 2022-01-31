@@ -58,6 +58,7 @@ parts:
       - modules/
       - kernel.img
       - initrd.img
+      - firmware
       - -boot
       - -usr
       - -etc
