@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 # Copyright (C) 2021 Canonical Ltd
 
-name: espressobin-kernel
+name: iotdevice-marvell-espressobin-kernel
 summary: EspressoBin kernel for snappy
 description: This is an EspressoBin snapped kernel
 
@@ -23,7 +23,7 @@ parts:
     source: git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal
     source-type: git
     source-depth: 1
-    source-branch: hwe-5.13
+    source-branch: hwe-5.15
     kernel-compiler: ccache aarch64-linux-gnu-gcc
     kernel-with-firmware: false
     kernel-image-target: Image
@@ -35,6 +35,7 @@ parts:
       # Required for loading the SD-Card
       - sdhci-xenon-driver
       - gpio-regulator
+      - nls_iso8859-1
       # Required for network access
       - mv88e6xxx
       - mvneta
@@ -53,10 +54,10 @@ parts:
     # config.common.ports doesn't exist in the hwe-* branches, so just create an empty file
     override-pull: |
       snapcraftctl pull
-      touch ${SNAPCRAFT_PART_SRC}/debian.hwe-5.13/config/config.common.ports
+      touch ${SNAPCRAFT_PART_SRC}/debian.hwe-5.15/config/config.common.ports
     override-build: |
       snapcraftctl build
-      snapcraftctl set-version $(dpkg-parsechangelog -l ${SNAPCRAFT_PART_SRC}/debian.hwe-5.13/changelog -S version)
+      snapcraftctl set-version $(dpkg-parsechangelog -l ${SNAPCRAFT_PART_SRC}/debian.hwe-5.15/changelog -S version)
       mkimage -f ${SNAPCRAFT_PROJECT_DIR}/fitImage.its ${SNAPCRAFT_PART_INSTALL}/fitImage
     stage:
       - System.map-*
