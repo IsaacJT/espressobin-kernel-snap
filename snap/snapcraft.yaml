@@ -24,7 +24,8 @@ parts:
     source-type: git
     source-depth: 1
     source-branch: hwe-5.15
-    kernel-compiler: ccache aarch64-linux-gnu-gcc
+    build-environment:
+      - PATH: "/usr/lib/ccache:${PATH}"
     kernel-with-firmware: false
     kernel-image-target: Image
     kernel-device-trees:
