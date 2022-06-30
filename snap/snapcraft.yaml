@@ -5,7 +5,6 @@ name: iotdevice-marvell-espressobin-kernel
 summary: EspressoBin kernel for snappy
 description: This is an EspressoBin snapped kernel
 
-grade: stable
 build-base: core20
 confinement: strict
 type: kernel
@@ -17,81 +16,66 @@ architectures:
       - arm64
     run-on: arm64
 
+package-repositories:
+  - type: apt
+    url: http://ports.ubuntu.com
+    architectures: [arm64]
+    components: [main]
+    key-id: F6ECB3762474EDA9D21B7022871920D1991BC93C
+    key-server: keyserver.ubuntu.com
+    suites:
+      - focal
+      - focal-updates
+      - focal-security
+      - focal-backports
+
 parts:
   kernel:
-    plugin: x-kernel
-    source: git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal
-    source-type: git
-    source-depth: 1
-    source-branch: hwe-5.15
-    build-environment:
-      - PATH: "/usr/lib/ccache:${PATH}"
-    kernel-with-firmware: false
-    kernel-image-target: Image
-    kernel-device-trees:
-      - marvell/armada-3720-espressobin
-    kernel-initrd-channel: stable
-    kernel-initrd-compression: gz
+    plugin: nil
+    stage-packages:
+      - linux-image-generic-hwe-20.04
+    organize:
+      lib/firmware/*/device-tree/marvell/armada-3720-espressobin.dtb: dtbs/
+      lib/modules: modules
+      boot/vmlinuz-*: kernel.img
+    override-build: |
+      snapcraftctl build
+      snapcraftctl set-version $(basename ${SNAPCRAFT_PART_INSTALL}/boot/config-* | cut -d- -f2-)
+      snapcraftctl set-grade stable
+    stage:
+      - modules
+      - dtbs
+      - kernel.img
+
+  initrd:
+    plugin: x_initrd
+    stage-packages:
+      - linux-image-generic-hwe-20.04
+      - linux-headers-generic-hwe-20.04
+    kernel-initrd-channel: beta
     kernel-initrd-configured-modules:
-      # Required for loading the SD-Card
       - sdhci-xenon-driver
       - gpio-regulator
       - nls_iso8859-1
-      # Required for network access
-      - mv88e6xxx
-      - mvneta
-      - mvmdio
-    kconfigflavour: generic
-    kconfigs:
-      # Disable image signing keys
-      - CONFIG_SYSTEM_REVOCATION_KEYS=""
-      - CONFIG_SYSTEM_TRUSTED_KEYS=""
-      # This settings causes an error while building
-      - CONFIG_DEBUG_INFO_BTF=n
-      # Disable unneeded components (the device is headless)
-      - CONFIG_SOUND=n
-      - CONFIG_DRM=n
-      - CONFIG_MEDIA_SUPPORT=n
-    # config.common.ports doesn't exist in the hwe-* branches, so just create an empty file
-    override-pull: |
-      snapcraftctl pull
-      touch ${SNAPCRAFT_PART_SRC}/debian.hwe-5.15/config/config.common.ports
-    override-build: |
-      snapcraftctl build
-      snapcraftctl set-version $(dpkg-parsechangelog -l ${SNAPCRAFT_PART_SRC}/debian.hwe-5.15/changelog -S version)
-      mkimage -f ${SNAPCRAFT_PROJECT_DIR}/fitImage.its ${SNAPCRAFT_PART_INSTALL}/fitImage
-    stage:
-      - System.map-*
-      - config-*
-      - fitImage
-      - initrd.img
-      - kernel.img
-      - modules
-      - dtbs/*
-      - -modules/*/build
-      - -modules/*/source
+    kernel-image-target: vmlinuz
+
   firmware:
     plugin: nil
-    source: https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git
-    source-type: git
-    source-branch: main
-    source-depth: 1
-    override-build: |
-      mkdir ${SNAPCRAFT_PART_INSTALL}/firmware
-      cp -r ${SNAPCRAFT_PART_SRC}/* ${SNAPCRAFT_PART_INSTALL}/firmware/
-
-build-packages:
-  - dpkg-dev
-  - android-tools-mkbootimg
-  - libssl-dev
-  - libfdt-dev
-  - cpio
-  - binutils-aarch64-linux-gnu
-  - device-tree-compiler
-  - libelf-dev
-  - ccache
-  - u-boot-tools
-  - on amd64:
-    - gcc-aarch64-linux-gnu
-  - else:
-    - gcc
+    stage-packages:
+      - linux-firmware
+    # Remove large firmware files that will never be needed
+    prime:
+      - -usr
+      - -firmware/netronome
+      - -firmware/intel
+      - -firmware/amdgpu
+      - -firmware/liquidio
+      - -firmware/qcom
+      - -firmware/mellanox
+      - -firmware/radeon
+      - -firmware/i915
+      - -firmware/brcm
+      - -firmware/qek
+      - -firmware/ath10k
+    organize:
+      lib/firmware: firmware
